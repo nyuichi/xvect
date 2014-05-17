@@ -20,6 +20,7 @@ typedef struct xvect {
 static inline void xv_init(xvect *, size_t);
 static inline void xv_destroy(xvect *);
 
+static inline size_t xv_size(xvect *);
 static inline void xv_reserve(xvect *, size_t);
 
 static inline void *xv_get(xvect *, size_t);
@@ -42,6 +43,12 @@ static inline void
 xv_destroy(xvect *x)
 {
   free(x->data);
+}
+
+static inline size_t
+xv_size(xvect *x)
+{
+  return x->size;
 }
 
 static inline void
