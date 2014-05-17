@@ -34,6 +34,7 @@ static inline void *xv_peek(xvect *);
 static inline void *xv_pop(xvect *);
 
 static inline void xv_splice(xvect *, size_t, size_t);
+static inline void xv_insert(xvect *, size_t, void *);
 
 static inline void
 xv_init(xvect *x, size_t width)
@@ -118,6 +119,17 @@ xv_splice(xvect *x, size_t i, size_t c)
 {
   memmove(x->data + i * x->width, x->data + (i + c) * x->width, (x->size - i - c) * x->width);
   x->size -= c;
+}
+
+static inline void
+xv_insert(xvect *x, size_t i, void *src)
+{
+  xv_reserve(x->size + 1);
+
+  memmove(x->data + (i + 1) * x->width, x->data + i * x->width, (x->size - i) * x->width);
+  x->size += 1;
+
+  xv_set(x, i, src);
 }
 
 #if defined(__cplusplus)

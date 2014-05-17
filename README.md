@@ -22,6 +22,7 @@ static inline void *xv_peek(xvect *);
 static inline void *xv_pop(xvect *);
 
 static inline void xv_splice(xvect *, size_t, size_t);
+static inline void xv_insert(xvect *, size_t, void *);
 ```
 
 # License
