@@ -2,7 +2,7 @@
 #define XVECT_H__
 
 /*
- * Copyright (c) 2014 by Yuichi Nishiwaki <yuichi@idyll.jp>
+ * Copyright (c) 2014 by Yuichi Nishiwaki <yuichi@idylls.jp>
  */
 
 #if defined(__cplusplus)
