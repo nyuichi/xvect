@@ -21,7 +21,10 @@ static inline void xv_init(xvect *, size_t);
 static inline void xv_destroy(xvect *);
 
 static inline size_t xv_size(xvect *);
+
+static inline void xv_adjust(xvect *, size_t);
 static inline void xv_reserve(xvect *, size_t);
+static inline void xv_shrink(xvect *, size_t);
 
 static inline void *xv_get(xvect *, size_t);
 static inline void xv_set(xvect *, size_t, void *);
@@ -54,10 +57,27 @@ xv_size(xvect *x)
 }
 
 static inline void
-xv_reserve(xvect *x, size_t newcapa)
+xv_adjust(xvect *x, size_t newcapa)
 {
   x->data = realloc(x->data, newcapa * x->width);
   x->capa = newcapa;
+  x->size = x->capa < x->size ? x->capa : x->size;
+}
+
+static inline void
+xv_reserve(xvect *x, size_t mincapa)
+{
+  if (x->capa < mincapa) {
+    xv_adjust(x, mincapa);
+  }
+}
+
+static inline void
+xv_shrink(xvect *x, size_t maxcapa)
+{
+  if (x->capa > maxcapa) {
+    xv_adjust(x, maxcapa);
+  }
 }
 
 static inline void *
