@@ -31,7 +31,6 @@ static inline void *xv_get(xvect *, size_t);
 static inline void xv_set(xvect *, size_t, void *);
 
 static inline void xv_push(xvect *, void *);
-static inline void *xv_peek(xvect *);
 static inline void *xv_pop(xvect *);
 
 static inline void xv_splice(xvect *, size_t, ptrdiff_t);
@@ -101,12 +100,6 @@ xv_push(xvect *x, void *src)
     xv_reserve(x, x->size * 2 + 1);
   }
   xv_set(x, x->size++, src);
-}
-
-static inline void *
-xv_peek(xvect *x)
-{
-  return xv_get(x, x->size);
 }
 
 static inline void *
