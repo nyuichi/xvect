@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,7 +34,7 @@ static inline void xv_push(xvect *, void *);
 static inline void *xv_peek(xvect *);
 static inline void *xv_pop(xvect *);
 
-static inline void xv_splice(xvect *, size_t, size_t);
+static inline void xv_splice(xvect *, size_t, ptrdiff_t);
 static inline void xv_insert(xvect *, size_t, void *);
 
 static inline void
@@ -90,7 +91,7 @@ xv_get(xvect *x, size_t i)
 static inline void
 xv_set(xvect *x, size_t i, void *src)
 {
-  memcpy(x->data + i * x->width, src, x->width);
+  memcpy(xv_get(x, i), src, x->width);
 }
 
 static inline void
@@ -115,20 +116,17 @@ xv_pop(xvect *x)
 }
 
 static inline void
-xv_splice(xvect *x, size_t i, size_t c)
+xv_splice(xvect *x, size_t i, ptrdiff_t c)
 {
-  memmove(x->data + i * x->width, x->data + (i + c) * x->width, (x->size - i - c) * x->width);
+  xv_reserve(x, x->size - c);
+  memmove(xv_get(x, i), xv_get(x, i + c), (x->size - i - c) * x->width);
   x->size -= c;
 }
 
 static inline void
 xv_insert(xvect *x, size_t i, void *src)
 {
-  xv_reserve(x, x->size + 1);
-
-  memmove(x->data + (i + 1) * x->width, x->data + i * x->width, (x->size - i) * x->width);
-  x->size += 1;
-
+  xv_splice(x, i, -1);
   xv_set(x, i, src);
 }
 
