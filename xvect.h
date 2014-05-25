@@ -124,7 +124,7 @@ xv_splice(xvect *x, size_t i, size_t c)
 static inline void
 xv_insert(xvect *x, size_t i, void *src)
 {
-  xv_reserve(x->size + 1);
+  xv_reserve(x, x->size + 1);
 
   memmove(x->data + (i + 1) * x->width, x->data + i * x->width, (x->size - i) * x->width);
   x->size += 1;
