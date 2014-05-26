@@ -57,7 +57,7 @@ xv_size(xvect *x)
 }
 
 static inline void
-xv_adjust_(xvect *x, size_t newcapa)
+xv_adjust(xvect *x, size_t newcapa)
 {
   x->data = realloc(x->data, newcapa * x->width);
   x->capa = newcapa;
@@ -68,7 +68,7 @@ static inline void
 xv_reserve(xvect *x, size_t mincapa)
 {
   if (x->capa < mincapa) {
-    xv_adjust_(x, mincapa);
+    xv_adjust(x, mincapa);
   }
 }
 
@@ -76,7 +76,7 @@ static inline void
 xv_shrink(xvect *x, size_t maxcapa)
 {
   if (x->capa > maxcapa) {
-    xv_adjust_(x, maxcapa);
+    xv_adjust(x, maxcapa);
   }
 }
 
