@@ -13,7 +13,6 @@ static inline void xv_destroy(xvect *);
 
 static inline size_t xv_size(xvect *);
 
-static inline void xv_adjust(xvect *, size_t);
 static inline void xv_reserve(xvect *, size_t);
 static inline void xv_shrink(xvect *, size_t);
 
