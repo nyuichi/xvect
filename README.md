@@ -1,4 +1,4 @@
-# xvect - super tiny extensible (and polymorphic) vector
+# xvect - super tiny extensible (and polymorphic) vector [![Build Status](https://travis-ci.org/wasabiz/xvect.svg)](https://travis-ci.org/wasabiz/xvect)
 
 - written in pure C99
 - all components are in single header file
