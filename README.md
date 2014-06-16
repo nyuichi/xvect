@@ -1,5 +1,6 @@
 # xvect - super tiny extensible (and polymorphic) vector [![Build Status](https://travis-ci.org/wasabiz/xvect.svg)](https://travis-ci.org/wasabiz/xvect)
 
+- implemented as a ring buffer
 - written in pure C99
 - all components are in single header file
 
@@ -22,7 +23,10 @@ static inline void xv_set(xvect *, size_t, void *);
 static inline void xv_push(xvect *, void *);
 static inline void *xv_pop(xvect *);
 
-static inline void xv_splice(xvect *, size_t, size_t);
+static inline void *xv_shift(xvect *);
+static inline void xv_unshift(xvect *, void *);
+
+static inline void xv_splice(xvect *, size_t, ptrdiff_t);
 static inline void xv_insert(xvect *, size_t, void *);
 ```
 
