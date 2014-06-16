@@ -1,6 +1,7 @@
 # xvect - super tiny extensible (and polymorphic) vector [![Build Status](https://travis-ci.org/wasabiz/xvect.svg)](https://travis-ci.org/wasabiz/xvect)
 
 - implemented as a ring buffer
+- ok to locate an element by nagative number
 - written in pure C99
 - all components are in single header file
 
