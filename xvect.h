@@ -15,7 +15,7 @@ extern "C" {
 
 typedef struct xvect {
   char *data;
-  size_t size, capa, width;
+  size_t size, head, tail, width;
 } xvect;
 
 static inline void xv_init(xvect *, size_t);
@@ -32,6 +32,9 @@ static inline void xv_set(xvect *, size_t, void *);
 static inline void xv_push(xvect *, void *);
 static inline void *xv_pop(xvect *);
 
+static inline void *xv_shift(xvect *);
+static inline void xv_unshift(xvect *, void *);
+
 static inline void xv_splice(xvect *, size_t, ptrdiff_t);
 static inline void xv_insert(xvect *, size_t, void *);
 
@@ -39,9 +42,10 @@ static inline void
 xv_init(xvect *x, size_t width)
 {
   x->data = NULL;
-  x->size = 0;
-  x->capa = 0;
   x->width = width;
+  x->size = 0;
+  x->head = 0;
+  x->tail = 0;
 }
 
 static inline void
@@ -53,37 +57,54 @@ xv_destroy(xvect *x)
 static inline size_t
 xv_size(xvect *x)
 {
-  return x->size;
+  return x->tail < x->head
+    ? x->tail + x->size - x->head
+    : x->tail - x->head;
 }
 
 static inline void
-xv_adjust(xvect *x, size_t newcapa)
+xv_rotate(xvect *x)
 {
-  x->data = realloc(x->data, newcapa * x->width);
-  x->capa = newcapa;
-  x->size = x->capa < x->size ? x->capa : x->size;
+  if (x->tail < x->head) {
+    char buf[x->size * x->width];
+
+    /* perform rotation */
+    memcpy(buf, x->data, sizeof buf);
+    memcpy(x->data, buf + x->head * x->width, (x->size - x->head) * x->width);
+    memcpy(x->data + (x->size - x->head) * x->width, buf, x->tail * x->width);
+    x->tail = x->size - x->head + x->tail;
+    x->head = 0;
+  }
+}
+
+static inline void
+xv_adjust(xvect *x, size_t size)
+{
+  xv_rotate(x);
+  x->data = realloc(x->data, size * x->width);
+  x->size = size;
 }
 
 static inline void
 xv_reserve(xvect *x, size_t mincapa)
 {
-  if (x->capa < mincapa) {
-    xv_adjust(x, mincapa);
+  if (x->size < mincapa + 1) {
+    xv_adjust(x, mincapa + 1);  /* capa == size - 1 */
   }
 }
 
 static inline void
 xv_shrink(xvect *x, size_t maxcapa)
 {
-  if (x->capa > maxcapa) {
-    xv_adjust(x, maxcapa);
+  if (x->size > maxcapa + 1) {
+    xv_adjust(x, maxcapa + 1);  /* capa == size - 1 */
   }
 }
 
 static inline void *
 xv_get(xvect *x, size_t i)
 {
-  return x->data + i * x->width;
+  return x->data + ((x->head + x->size + i) % x->size) * x->width;
 }
 
 static inline void
@@ -95,24 +116,40 @@ xv_set(xvect *x, size_t i, void *src)
 static inline void
 xv_push(xvect *x, void *src)
 {
-  if (x->capa <= x->size + 1) {
-    xv_reserve(x, x->size * 2 + 1);
-  }
-  xv_set(x, x->size++, src);
+  xv_reserve(x, xv_size(x) + 1);
+  xv_set(x, xv_size(x), src);
+  x->tail = (x->tail + 1) % x->size;
 }
 
 static inline void *
 xv_pop(xvect *x)
 {
-  return xv_get(x, --x->size);
+  x->tail = (x->tail + x->size - 1) % x->size;
+  return xv_get(x, xv_size(x));
+}
+
+static inline void *
+xv_shift(xvect *x)
+{
+  x->head = (x->head + 1) % x->size;
+  return xv_get(x, -1);
+}
+
+static inline void
+xv_unshift(xvect *x, void *src)
+{
+  xv_reserve(x, xv_size(x) + 1);
+  xv_set(x, -1, src);
+  x->head = (x->head + x->size - 1) % x->size;
 }
 
 static inline void
 xv_splice(xvect *x, size_t i, ptrdiff_t c)
 {
-  xv_reserve(x, x->size - c);
-  memmove(xv_get(x, i), xv_get(x, i + c), (x->size - i - c) * x->width);
-  x->size -= c;
+  xv_reserve(x, xv_size(x) - c);
+  xv_rotate(x);
+  memmove(xv_get(x, i), xv_get(x, i + c), (xv_size(x) - i - c) * x->width);
+  x->tail -= c;
 }
 
 static inline void
