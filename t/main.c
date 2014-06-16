@@ -63,7 +63,7 @@ test_middle(xvect *x)
 {
   int a[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   const int b[] = { 0, 1, 2, 7, 8, 9 };
-  size_t i, j;
+  size_t i;
 
   puts("* testing insert/splice ...");
 
