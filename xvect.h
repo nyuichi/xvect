@@ -15,7 +15,7 @@ extern "C" {
 
 typedef struct xvect {
   char *data;
-  size_t size, head, tail, width;
+  size_t size, mask, head, tail, width;
 } xvect;
 
 static inline void xv_init(xvect *, size_t);
@@ -44,6 +44,7 @@ xv_init(xvect *x, size_t width)
   x->data = NULL;
   x->width = width;
   x->size = 0;
+  x->mask = -1;
   x->head = 0;
   x->tail = 0;
 }
@@ -60,6 +61,20 @@ xv_size(xvect *x)
   return x->tail < x->head
     ? x->tail + x->size - x->head
     : x->tail - x->head;
+}
+
+static inline size_t
+xv_round2(size_t x)
+{
+  x -= 1;
+  x |= (x >> 1);
+  x |= (x >> 2);
+  x |= (x >> 4);
+  x |= (x >> 8);
+  x |= (x >> 16);
+  x |= (x >> 32);
+  x++;
+  return x;
 }
 
 static inline void
@@ -80,9 +95,13 @@ xv_rotate(xvect *x)
 static inline void
 xv_adjust(xvect *x, size_t size)
 {
-  xv_rotate(x);
-  x->data = realloc(x->data, size * x->width);
-  x->size = size;
+  size = xv_round2(size);
+  if (size != x->size) {
+    xv_rotate(x);
+    x->data = realloc(x->data, size * x->width);
+    x->size = size;
+    x->mask = size - 1;
+  }
 }
 
 static inline void
@@ -104,7 +123,7 @@ xv_shrink(xvect *x, size_t maxcapa)
 static inline void *
 xv_get(xvect *x, size_t i)
 {
-  return x->data + ((x->head + x->size + i) % x->size) * x->width;
+  return x->data + ((x->head + x->size + i) & x->mask) * x->width;
 }
 
 static inline void
@@ -118,20 +137,20 @@ xv_push(xvect *x, void *src)
 {
   xv_reserve(x, xv_size(x) + 1);
   xv_set(x, xv_size(x), src);
-  x->tail = (x->tail + 1) % x->size;
+  x->tail = (x->tail + 1) & x->mask;
 }
 
 static inline void *
 xv_pop(xvect *x)
 {
-  x->tail = (x->tail + x->size - 1) % x->size;
+  x->tail = (x->tail + x->size - 1) & x->mask;
   return xv_get(x, xv_size(x));
 }
 
 static inline void *
 xv_shift(xvect *x)
 {
-  x->head = (x->head + 1) % x->size;
+  x->head = (x->head + 1) & x->mask;
   return xv_get(x, -1);
 }
 
@@ -140,7 +159,7 @@ xv_unshift(xvect *x, void *src)
 {
   xv_reserve(x, xv_size(x) + 1);
   xv_set(x, -1, src);
-  x->head = (x->head + x->size - 1) % x->size;
+  x->head = (x->head + x->size - 1) & x->mask;
 }
 
 static inline void
