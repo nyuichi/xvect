@@ -96,12 +96,28 @@ test_middle(xvect *x)
   puts(" => OK");
 }
 
+void
+test_round2()
+{
+  puts("* testing round2:");
+
+  assert(xv_round2(0) == 0);
+  assert(xv_round2(1) == 1);
+  assert(xv_round2(2) == 2);
+  assert(xv_round2(3) == 4);
+  assert(xv_round2(4) == 4);
+
+  puts(" => OK");
+}
+
 int
 main(int argc, char *argv[])
 {
   xvect x;
 
   puts("---- xvect test started ----");
+
+  test_round2();
 
   xv_init(&x, sizeof(int));
 
