@@ -188,12 +188,15 @@ xv_splice(xvect *x, size_t i, size_t j)
 static inline void
 xv_insert(xvect *x, size_t i, void *src)
 {
-  assert(i < xv_size(x));
+  assert(i <= xv_size(x));
 
   xv_reserve(x, xv_size(x) + 1);
   xv_rotate(x);
   x->tail = (x->tail + 1) & x->mask;
-  memmove(xv_get(x, i + 1), xv_get(x, i), (xv_size(x) - i) * x->width);
+
+  if (xv_size(x) - 1 != i) {
+    memmove(xv_get(x, i + 1), xv_get(x, i), (xv_size(x) - 1 - i) * x->width);
+  }
   xv_set(x, i, src);
 }
 
