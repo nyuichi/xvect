@@ -85,7 +85,7 @@ test_middle(xvect *x)
     assert(*(int *)xv_get(x, i) == (int)i);
   }
 
-  xv_splice(x, 3, 4);
+  xv_splice(x, 3, 7);
 
   assert(xv_size(x) == 6);
 

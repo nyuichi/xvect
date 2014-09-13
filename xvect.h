@@ -36,7 +36,7 @@ static inline void *xv_pop(xvect *);
 static inline void *xv_shift(xvect *);
 static inline void xv_unshift(xvect *, void *);
 
-static inline void xv_splice(xvect *, size_t, ptrdiff_t);
+static inline void xv_splice(xvect *, size_t, size_t);
 static inline void xv_insert(xvect *, size_t, void *);
 
 static inline void
@@ -176,18 +176,24 @@ xv_unshift(xvect *x, void *src)
 }
 
 static inline void
-xv_splice(xvect *x, size_t i, ptrdiff_t c)
+xv_splice(xvect *x, size_t i, size_t j)
 {
-  xv_reserve(x, xv_size(x) - c);
+  assert(i <= j && j < xv_size(x));
+
   xv_rotate(x);
-  memmove(xv_get(x, i), xv_get(x, i + c), (xv_size(x) - i - c) * x->width);
-  x->tail -= c;
+  memmove(xv_get(x, i), xv_get(x, j), (xv_size(x) - j) * x->width);
+  x->tail = (x->tail - j + i) & x->mask;
 }
 
 static inline void
 xv_insert(xvect *x, size_t i, void *src)
 {
-  xv_splice(x, i, -1);
+  assert(i < xv_size(x));
+
+  xv_reserve(x, xv_size(x) + 1);
+  xv_rotate(x);
+  x->tail = (x->tail + 1) & x->mask;
+  memmove(xv_get(x, i + 1), xv_get(x, i), (xv_size(x) - i) * x->width);
   xv_set(x, i, src);
 }
 
