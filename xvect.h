@@ -12,6 +12,7 @@ extern "C" {
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 typedef struct xvect {
   char *data;
@@ -123,7 +124,9 @@ xv_shrink(xvect *x, size_t maxcapa)
 static inline void *
 xv_get(xvect *x, size_t i)
 {
-  return x->data + ((x->head + x->size + i) & x->mask) * x->width;
+  assert(i < xv_size(x));
+
+  return x->data + ((x->head + i) & x->mask) * x->width;
 }
 
 static inline void
@@ -136,30 +139,40 @@ static inline void
 xv_push(xvect *x, void *src)
 {
   xv_reserve(x, xv_size(x) + 1);
-  xv_set(x, xv_size(x), src);
   x->tail = (x->tail + 1) & x->mask;
+  xv_set(x, xv_size(x) - 1, src);
 }
 
 static inline void *
 xv_pop(xvect *x)
 {
-  x->tail = (x->tail + x->size - 1) & x->mask;
-  return xv_get(x, xv_size(x));
+  void *dat;
+
+  assert(xv_size(x) >= 1);
+
+  dat = xv_get(x, xv_size(x) - 1);
+  x->tail = (x->tail - 1) & x->mask;
+  return dat;
 }
 
 static inline void *
 xv_shift(xvect *x)
 {
+  void *dat;
+
+  assert(xv_size(x) >= 1);
+
+  dat = xv_get(x, 0);
   x->head = (x->head + 1) & x->mask;
-  return xv_get(x, -1);
+  return dat;
 }
 
 static inline void
 xv_unshift(xvect *x, void *src)
 {
   xv_reserve(x, xv_size(x) + 1);
-  xv_set(x, -1, src);
-  x->head = (x->head + x->size - 1) & x->mask;
+  x->head = (x->head - 1) & x->mask;
+  xv_set(x, 0, src);
 }
 
 static inline void
